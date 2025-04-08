@@ -2,6 +2,17 @@ const express = require('express');
 const router = express.Router();
 const Voto = require('../models/voto');
 
+
+//Obtener todos los votos (GET)
+router.get("/", async (req, res) => {
+  try {
+      const votos = await Voto.find();
+      res.json(votos);
+  } catch (error) {
+      res.status(500).json({ mensaje: "Error al obtener los votos", error });
+  }
+});
+
 // Registrar un nuevo voto
 router.post('/', async (req, res) => {
   try {
