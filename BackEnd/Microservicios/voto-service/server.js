@@ -29,7 +29,7 @@ app.get("/", (req, res) => {
 });
 
 //Iniciar servidor
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 5006;
 app.listen(PORT, () => {
     console.log(` Servidor corriendo en http://localhost:${PORT}`);
 });
