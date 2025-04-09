@@ -4,7 +4,7 @@ const Voter = require('../models/Voter');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { generarToken } = require('../utils');
+//const { generarToken } = require('../utils');
 
 
 router.post('/register', async (req, res) => {
