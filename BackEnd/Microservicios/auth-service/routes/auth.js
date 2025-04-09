@@ -4,6 +4,8 @@ const Voter = require('../models/Voter');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const { generarToken } = require('../utils');
+
 
 router.post('/register', async (req, res) => {
     const { nombre, apellido, codigoEstudiantil, email, password } = req.body;
@@ -22,16 +24,25 @@ router.post('/register', async (req, res) => {
           msg: 'Ya existe un usuario con ese correo o código estudiantil.'
         });
       }
+      let tokenUnico;
+let existe = true;
+
+do {
+  tokenUnico = generarToken();
+  const encontrado = await Voter.findOne({ token: tokenUnico });
+  existe = !!encontrado;
+} while (existe);
+const hashedPassword = await bcrypt.hash(password, 10);
+const newVoter = new Voter({
+  nombre,
+  apellido,
+  codigoEstudiantil,
+  email,
+  password: hashedPassword,
+  token: tokenUnico  // lo agregas aquí
+});
   
       // Hashear la contraseña
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newVoter = new Voter({
-        nombre,
-        apellido,
-        codigoEstudiantil,
-        email,
-        password: hashedPassword
-      });
   
       await newVoter.save();
       res.status(201).json({ msg: 'Registro exitoso' });
@@ -128,6 +139,20 @@ router.put('/voters/:codigoEstudiantil', async (req, res) => {
     res.status(500).json({ msg: 'Error al actualizar votante', error: err.message });
   }
 });
+
+// Función para generar un token aleatorio de 2 letras y 2 números
+function generarToken() {
+  const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numeros = '0123456789';
+  
+  const letra1 = letras[Math.floor(Math.random() * letras.length)];
+  const letra2 = letras[Math.floor(Math.random() * letras.length)];
+  const numero1 = numeros[Math.floor(Math.random() * numeros.length)];
+  const numero2 = numeros[Math.floor(Math.random() * numeros.length)];
+
+  return `${letra1}${letra2}${numero1}${numero2}`;
+}
+
 
   
   
