@@ -7,7 +7,7 @@ const contarVotos = async (eleccionId) => {
   const conteo = {};
 
   votos.forEach(voto => {
-    const candidato = voto.candidatoId;
+    const candidato = voto.candidateId;
     conteo[candidato] = (conteo[candidato] || 0) + 1;
   });
 
@@ -21,14 +21,29 @@ const finalizarEleccion = async (eleccionId) => {
 
 const declararGanador = async (eleccionId) => {
   const conteo = await contarVotos(eleccionId);
-  const ganadorId = Object.keys(conteo).reduce((a, b) => conteo[a] > conteo[b] ? a : b);
+
+  if (Object.keys(conteo).length === 0) {
+    return {
+      eleccionId,
+      mensaje: "No hay votos registrados",
+      ganadores: []
+    };
+  }
+
+  // Obtener el número máximo de votos
+  const maxVotos = Math.max(...Object.values(conteo));
+
+  // Obtener todos los candidatos con esa cantidad de votos
+  const ganadores = Object.keys(conteo).filter(candidatoId => conteo[candidatoId] === maxVotos);
 
   return {
     eleccionId,
-    ganador: {
-      candidatoId: ganadorId,
-      votos: conteo[ganadorId]
-    }
+    maxVotos,
+    ganadores: ganadores.map(id => ({
+      candidatoId: id,
+      votos: maxVotos
+    })),
+    empate: ganadores.length > 1
   };
 };
 
