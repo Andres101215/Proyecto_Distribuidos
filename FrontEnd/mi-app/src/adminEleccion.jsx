@@ -8,6 +8,8 @@ export default function AdminEleccion() {
   const [elecciones, setElecciones] = useState([]);
   const [nuevaEleccion, setNuevaEleccion] = useState('');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
+  const [candidatosSeleccionados, setCandidatosSeleccionados] = useState([]);
+  const [candidatosDisponibles, setCandidatosDisponibles] = useState([]);
 
   const [nombreCandidato, setNombreCandidato] = useState('');
   const [edad, setEdad] = useState('');
@@ -28,14 +30,14 @@ export default function AdminEleccion() {
     ];
 
     const guardadas = JSON.parse(localStorage.getItem('elecciones')) || [];
-
     const nombresExistentes = new Set(guardadas.map((e) => e.nombre));
     const nuevas = predeterminadas.filter((e) => !nombresExistentes.has(e.nombre));
-
     const combinadas = [...guardadas, ...nuevas];
-
     setElecciones(combinadas);
     localStorage.setItem('elecciones', JSON.stringify(combinadas));
+
+    const candidatosGuardados = JSON.parse(localStorage.getItem('candidatos')) || [];
+    setCandidatosDisponibles(candidatosGuardados);
   }, []);
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
@@ -53,7 +55,11 @@ export default function AdminEleccion() {
     if (nuevaEleccion.trim() !== '') {
       setElecciones((prev) => {
         if (!prev.some(e => e.nombre === nuevaEleccion.trim())) {
-          const actualizadas = [...prev, { nombre: nuevaEleccion.trim(), descripcion: nuevaDescripcion.trim() }];
+          const actualizadas = [...prev, {
+            nombre: nuevaEleccion.trim(),
+            descripcion: nuevaDescripcion.trim(),
+            candidatos: candidatosSeleccionados
+          }];
           localStorage.setItem('elecciones', JSON.stringify(actualizadas));
           return actualizadas;
         }
@@ -61,12 +67,33 @@ export default function AdminEleccion() {
       });
       setNuevaEleccion('');
       setNuevaDescripcion('');
+      setCandidatosSeleccionados([]);
       setSelected(null);
     }
   };
 
   const handleCrearCandidato = () => {
-    console.log({ nombreCandidato, edad, codigo, descripcion, foto, propuesta, eleccionCandidato });
+    const nuevoCandidato = {
+      id: Date.now().toString(),
+      nombre: nombreCandidato,
+      edad,
+      codigo,
+      descripcion,
+      foto,
+      propuesta
+    };
+
+    const actualizados = [...candidatosDisponibles, nuevoCandidato];
+    setCandidatosDisponibles(actualizados);
+    localStorage.setItem('candidatos', JSON.stringify(actualizados));
+
+    setNombreCandidato('');
+    setEdad('');
+    setCodigo('');
+    setDescripcion('');
+    setFoto(null);
+    setPropuesta(null);
+    setEleccionCandidato('');
     setSelected(null);
   };
 
@@ -111,13 +138,26 @@ export default function AdminEleccion() {
 
         {selected === 'crear-eleccion' && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] relative">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-[450px] relative">
               <button onClick={() => setSelected(null)} className="absolute top-2 right-2 text-black font-bold text-lg">×</button>
               <h2 className="text-xl font-bold mb-4">Crear nueva elección</h2>
+
               <label className="block font-semibold mb-1">Nombre de la elección</label>
               <input type="text" value={nuevaEleccion} onChange={(e) => setNuevaEleccion(e.target.value)} className="w-full p-2 border rounded mb-4 bg-yellow-100" />
+
               <label className="block font-semibold mb-1">Descripción</label>
               <textarea value={nuevaDescripcion} onChange={(e) => setNuevaDescripcion(e.target.value)} className="w-full p-2 border rounded mb-4 bg-yellow-100" />
+
+              <label className="block font-semibold mb-1">Seleccionar candidatos</label>
+              <select multiple value={candidatosSeleccionados} onChange={(e) => {
+                const options = Array.from(e.target.selectedOptions, option => option.value);
+                setCandidatosSeleccionados(options);
+              }} className="w-full p-2 border rounded mb-4 bg-yellow-100">
+                {candidatosDisponibles.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                ))}
+              </select>
+
               <div className="flex justify-between">
                 <button onClick={() => setSelected(null)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
                 <button onClick={handleAceptar} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded">Aceptar</button>
@@ -149,14 +189,6 @@ export default function AdminEleccion() {
               <label className="block font-semibold mb-1">Descripción</label>
               <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} className="w-full p-2 border rounded mb-4 bg-yellow-100" />
 
-              <label className="block font-semibold mb-1">Parte de la elección</label>
-              <select value={eleccionCandidato} onChange={(e) => setEleccionCandidato(e.target.value)} className="w-full p-2 border rounded mb-4 bg-yellow-100">
-                <option value="">Seleccione una elección</option>
-                {elecciones.map((e, i) => (
-                  <option key={i} value={e.nombre}>{e.nombre}</option>
-                ))}
-              </select>
-
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="block font-semibold mb-1">Foto</label>
@@ -170,7 +202,7 @@ export default function AdminEleccion() {
 
               <div className="flex justify-between">
                 <button onClick={() => setSelected(null)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
-                <button onClick={handleCrearCandidato} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded">Guardar</button>
+                <button onClick={handleCrearCandidato} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded">Aceptar</button>
               </div>
             </div>
           </div>
