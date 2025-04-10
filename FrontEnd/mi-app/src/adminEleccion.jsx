@@ -28,7 +28,7 @@ export default function AdminEleccion() {
     if (!confirm) return;
 
     try {
-     // await axios.put(`http://localhost:5000/api/auditoria/auditoria/finalizar-eleccion=${eleccionId}`);
+      await axios.put(`http://localhost:5000/api/auditoria/auditoria/finalizar-eleccion/${eleccionId}`);
       const { data: conteo } = await axios.get(`http://localhost:5000/api/auditoria/auditoria/contar-votos/${eleccionId}`);
       const { data: resultado } = await axios.post(`http://localhost:5000/api/auditoria/auditoria/ganador/${eleccionId}`);
 

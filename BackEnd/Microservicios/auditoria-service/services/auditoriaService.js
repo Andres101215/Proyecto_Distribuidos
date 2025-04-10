@@ -16,8 +16,19 @@ const contarVotos = async (eleccionId) => {
 };
 
 const finalizarEleccion = async (eleccionId) => {
-  const { data } = await axios.put(`${ELECCION_SERVICE_URL}/${eleccionId}/finalizar`);
-  return data;
+  try {
+    const { data } = await axios.put(`${ELECCION_SERVICE_URL}/${eleccionId}`, {
+      status: 'finalizado'
+    });
+
+    return {
+      mensaje: 'Elección finalizada exitosamente',
+      eleccion: data
+    };
+  } catch (error) {
+    console.error('Error al finalizar la elección:', error.message);
+    throw new Error('No se pudo finalizar la elección');
+  }
 };
 
 const declararGanador = async (eleccionId) => {
