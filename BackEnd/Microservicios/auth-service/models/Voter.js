@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Definición del esquema de Votante
 const voterSchema = new mongoose.Schema({
   nombre: {
     type: String,
@@ -12,12 +13,12 @@ const voterSchema = new mongoose.Schema({
   codigoEstudiantil: {
     type: String,
     required: true,
-    unique: true 
+    unique: true
   },
   email: {
     type: String,
     required: true,
-    unique: true 
+    unique: true
   },
   password: {
     type: String,
@@ -32,8 +33,8 @@ const voterSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   }
-}, {
-  collection: 'Votantes' // 🔥 IMPORTANTE: asegura que use la colección correcta
-});
+}, {collection: 'Votantes' });
 
-module.exports = mongoose.model('Votantes', voterSchema);
+const Votante = mongoose.model('Votantes', voterSchema);
+
+module.exports = Votante;
