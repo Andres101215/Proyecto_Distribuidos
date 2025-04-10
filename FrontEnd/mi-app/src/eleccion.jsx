@@ -5,7 +5,7 @@ import axios from 'axios';
 
 export default function Eleccion() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [opciones, setOpciones] = useState([]);
+  const [elecciones, setElecciones] = useState([]);
   const navigate = useNavigate();
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
@@ -14,20 +14,18 @@ export default function Eleccion() {
   useEffect(() => {
     axios.get('http://localhost:5000/api/elecciones/elecciones')
       .then(response => {
-        console.log('Respuesta de la API:', response.data); // <-- Aquí
-        const elecciones = response.data;
-        setOpciones(elecciones.map(e => e.titulo)); // Solo si quieres solo los títulos
+        setElecciones(response.data); // Guardar todo el objeto de cada elección
       })
       .catch(error => {
         console.error('Error al obtener elecciones:', error);
       });
   }, []);
-  
 
-  const handleSelect = (titulo) => {
-    navigate(`/votacion?titulo=${encodeURIComponent(titulo)}`);
+  const handleSelect = (eleccion) => {
+    navigate(`/votacion?id=${encodeURIComponent(eleccion._id)}`);
   };
 
+  
   return (
     <div className="flex min-h-screen relative">
       {/* Sidebar */}
@@ -78,13 +76,13 @@ export default function Eleccion() {
         <div className="relative z-10 flex flex-col items-center justify-center w-full">
           <h1 className="text-3xl font-bold text-white mb-10">Vota por el futuro de la UPTC</h1>
           <div className="space-y-6 w-full max-w-md">
-            {opciones.map((eleccion) => (
+            {elecciones.map((eleccion) => (
               <button
                 key={eleccion._id}
                 onClick={() => handleSelect(eleccion)}
                 className="w-full py-5 rounded-lg text-white font-semibold transition transform duration-150 hover:scale-105 bg-black"
               >
-                {eleccion}
+                {eleccion.titulo}
               </button>
             ))}
           </div>
