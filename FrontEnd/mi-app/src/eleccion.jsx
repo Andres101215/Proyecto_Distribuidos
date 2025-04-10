@@ -3,12 +3,11 @@ import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-
 export default function Eleccion() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [opciones, setOpciones] = useState([]);
   const [userData, setUserData] = useState(null);
   const [elecciones, setElecciones] = useState([]);
+  const [votosUsuario, setVotosUsuario] = useState([]);
   const navigate = useNavigate();
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
@@ -21,25 +20,39 @@ export default function Eleccion() {
         const parsedUser = JSON.parse(storedUser);
         setUserData(parsedUser);
 
-        console.log('Usuario cargado:', parsedUser);
+        // Obtener elecciones
+        axios.get('http://localhost:5000/api/elecciones/elecciones')
+          .then(response => {
+            setElecciones(response.data);
+          })
+          .catch(error => {
+            console.error('Error al obtener elecciones:', error);
+          });
+
+        // Obtener votos del usuario
+        axios.get(`http://localhost:5000/api/votos/votos?voterId=${parsedUser.id}`)
+          .then(response => {
+            setVotosUsuario(response.data);
+          })
+          .catch(error => {
+            console.error('Error al obtener votos del usuario:', error);
+          });
+
       } catch (error) {
         console.error('Error al parsear los datos del usuario:', error);
       }
     }
-    axios.get('http://localhost:5000/api/elecciones/elecciones')
-      .then(response => {
-        setElecciones(response.data); // Guardar todo el objeto de cada elección
-      })
-      .catch(error => {
-        console.error('Error al obtener elecciones:', error);
-      });
   }, []);
 
   const handleSelect = (eleccion) => {
     navigate(`/votacion?id=${encodeURIComponent(eleccion._id)}`);
   };
 
-  
+  // Función para saber si ya votó en esa elección
+  const yaVotoEnEleccion = (eleccionId) => {
+    return votosUsuario.some(voto => voto.electionId === eleccionId);
+  };
+
   return (
     <div className="flex min-h-screen relative">
       {/* Sidebar */}
@@ -47,10 +60,8 @@ export default function Eleccion() {
         <div className="bg-black text-white w-64 flex flex-col items-stretch p-6 relative z-10">
           <User size={40} className="mb-4 self-center" />
           <div className="text-center mb-6">
-          <div className="text-center mb-6">
-  <p className="text-white">{userData?.nombre || 'Usuario'}</p>
-  <p className="text-sm text-gray-400">{userData?.email || 'correo@ejemplo.com'}</p>
-</div>
+            <p className="text-white">{userData?.nombre || 'Usuario'}</p>
+            <p className="text-sm text-gray-400">{userData?.email || 'correo@ejemplo.com'}</p>
           </div>
           <hr className="border-white my-2" />
           <button
@@ -92,15 +103,22 @@ export default function Eleccion() {
         <div className="relative z-10 flex flex-col items-center justify-center w-full">
           <h1 className="text-3xl font-bold text-white mb-10">Vota por el futuro de la UPTC</h1>
           <div className="space-y-6 w-full max-w-md">
-            {elecciones.map((eleccion) => (
-              <button
-                key={eleccion._id}
-                onClick={() => handleSelect(eleccion)}
-                className="w-full py-5 rounded-lg text-white font-semibold transition transform duration-150 hover:scale-105 bg-black"
-              >
-                {eleccion.titulo}
-              </button>
-            ))}
+            {elecciones.map((eleccion) => {
+              const deshabilitado = yaVotoEnEleccion(eleccion._id);
+
+              return (
+                <button
+                  key={eleccion._id}
+                  onClick={() => handleSelect(eleccion)}
+                  disabled={deshabilitado}
+                  className={`w-full py-5 rounded-lg text-white font-semibold transition transform duration-150 hover:scale-105 ${
+                    deshabilitado ? 'bg-gray-500 cursor-not-allowed' : 'bg-black'
+                  }`}
+                >
+                  {eleccion.titulo} {deshabilitado ? ' (Ya votaste)' : ''}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

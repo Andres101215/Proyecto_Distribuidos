@@ -57,28 +57,24 @@ export default function VotacionRepresentante() {
   const registrarVoto = async (candidato) => {
     const storedUser = localStorage.getItem('usuario');
     const parsedUser = JSON.parse(storedUser);
-    console.log('id:', parsedUser.id);
+
     const voterId = parsedUser.id;
-
-
-    console.log("eleccion id",id)
-    console.log("candidato id",candidato._id)
-
-    console.log("Candidato ID:", candidato._id);
-console.log("Tipo:", typeof candidato._id);
 
     const voto = {
       voterId: voterId,
       electionId: id,
       candidateId: candidato._id,
-      
-     // timestamp: new Date().toISOString()
+   
     };
 
     try {
       const res = await axios.post('http://localhost:5000/api/votos/votos', voto);
-      console.log('Voto registrado:', res.data);
+     
       setSeleccionado(candidato); // Actualizar interfaz con el nombre del candidato votado
+      console.log(candidato)
+
+      navigate(-1);
+      alert("El voto se registro correctamente por: "+candidato.nombre+" "+candidato.apellido)
     } catch (error) {
       console.error('Error al registrar el voto:', error);
       alert('Error al registrar el voto');

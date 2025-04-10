@@ -4,15 +4,26 @@ const Voto = require('../models/voto');
 const { crearVoto } = require('../service/votoService');
 
 
-//Obtener todos los votos (GET)
-router.get("/", async (req, res) => {
+// Obtener todos los votos o solo los de un usuario específico
+router.get('/', async (req, res) => {
   try {
-      const votos = await Voto.find();
-      res.json(votos);
+    const voterId = req.query.voterId;
+
+    let votos;
+
+    if (voterId) {
+      votos = await Voto.find({ voterId });
+    } else {
+      votos = await Voto.find();
+    }
+
+    res.json(votos);
   } catch (error) {
-      res.status(500).json({ mensaje: "Error al obtener los votos", error });
+    console.error('Error al obtener los votos:', error);
+    res.status(500).json({ error: 'Error al obtener los votos' });
   }
 });
+
 
 // Registrar un nuevo voto
 router.post('/', async (req, res) => {
