@@ -10,6 +10,7 @@ export default function AdminEleccion() {
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
   const [candidatosSeleccionados, setCandidatosSeleccionados] = useState([]);
   const [candidatosDisponibles, setCandidatosDisponibles] = useState([]);
+  const [usuario, setUsuario] = useState(null);
 
   const [nombreCandidato, setNombreCandidato] = useState('');
   const [edad, setEdad] = useState('');
@@ -38,6 +39,9 @@ export default function AdminEleccion() {
 
     const candidatosGuardados = JSON.parse(localStorage.getItem('candidatos')) || [];
     setCandidatosDisponibles(candidatosGuardados);
+
+    const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+    setUsuario(usuarioGuardado);
   }, []);
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
@@ -103,8 +107,10 @@ export default function AdminEleccion() {
         <div className="bg-black text-white w-64 flex flex-col items-stretch p-6 relative z-10">
           <User size={40} className="mb-4 self-center" />
           <div className="text-center mb-6">
-            <p className="text-white">Administrador</p>
-            <p className="text-sm text-gray-400">admin@uptc.edu.co</p>
+            <p className="text-white font-bold">
+              {usuario?.email === 'admin@uptc.edu.co' ? 'Administrador' : usuario?.nombre || 'Usuario'}
+            </p>
+            <p className="text-sm text-gray-400">{usuario?.email}</p>
           </div>
           <hr className="border-white my-2" />
           <button onClick={() => handleSelect('crear-eleccion')} className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full">Crear elección</button>
