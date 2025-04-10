@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -20,15 +21,35 @@ export default function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { correo, contraseña } = form;
+    try {
+      const response = await axios.post('http://localhost:5000/api/usuarios/auth/login', {
+        email: form.correo,
+        password: form.contraseña
+      });
 
-    if (correo === 'admin@uptc.edu.co' && contraseña === '1234') {
-      navigate('/admin');
-    } else {
-      navigate('/eleccion');
+      // Guardamos el token y usuario en localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
+
+      // Extraemos el usuario
+      const usuario = response.data.usuario;
+
+      // Redirigir según si es admin
+      if (usuario.admin === true || usuario.email === 'admin@uptc.edu.co') {
+        navigate('/admin');
+      } else {
+        navigate('/eleccion');
+      }
+
+    } catch (error) {
+      if (error.response) {
+        alert(error.response.data.msg);
+      } else {
+        alert('Error de conexión con el servidor');
+      }
     }
   };
 
