@@ -32,6 +32,8 @@ const voterSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   }
+}, {
+  collection: 'Votantes' // 🔥 IMPORTANTE: asegura que use la colección correcta
 });
 
 module.exports = mongoose.model('Votantes', voterSchema);
