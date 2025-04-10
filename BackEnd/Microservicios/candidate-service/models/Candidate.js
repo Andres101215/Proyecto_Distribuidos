@@ -7,13 +7,9 @@ const candidateSchema = new mongoose.Schema({
   codigoEstudiantil: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  propuestas: { type: String, required: true },
+  propuestas: { type: String, required: true }
+  
 
-  categoria: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Eleccion',     // Referencia al modelo Eleccion
-    required: true
-  }
 }, { collection: "Candidatos" }); // Forzamos el nombre de la colección
 
   const Candidato = mongoose.model("Candidatos", candidateSchema); // El primer parámetro no afecta la colección en la BD

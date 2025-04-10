@@ -4,7 +4,7 @@ const Candidate = require('../models/Candidate');
 
 // POST - Registrar candidato
 router.post('/register', async (req, res) => {
-    const { nombre, apellido, propuestas, codigoEstudiantil, email, password, categoria } = req.body;
+    const { nombre, apellido, propuestas, codigoEstudiantil, email, password } = req.body;
 
     try {
         const existing = await Candidate.findOne({ $or: [{ email }, { codigoEstudiantil }] });
@@ -18,8 +18,7 @@ router.post('/register', async (req, res) => {
             codigoEstudiantil,
             email,
             password,
-            propuestas,
-            categoria  // Se espera un ObjectId (el ID de la colección Eleccion)
+            propuestas
         });
 
         await newCandidate.save();
@@ -30,20 +29,20 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// GET - Listar todos los candidatos (con información de categoría)
+// GET - Listar todos los candidatos
 router.get('/', async (req, res) => {
     try {
-        const candidatos = await Candidate.find().populate('categoria');
+        const candidatos = await Candidate.find();
         res.status(200).json(candidatos);
     } catch (err) {
         res.status(500).json({ msg: 'Error al obtener candidatos', error: err.message });
     }
 });
 
-// GET - Buscar por código estudiantil (con populate)
+// GET - Buscar por código estudiantil
 router.get('/:codigo', async (req, res) => {
     try {
-        const candidato = await Candidate.findOne({ codigoEstudiantil: req.params.codigo }).populate('categoria');
+        const candidato = await Candidate.findOne({ codigoEstudiantil: req.params.codigo });
         if (!candidato) return res.status(404).json({ msg: 'Candidato no encontrado' });
         res.json(candidato);
     } catch (err) {
@@ -64,7 +63,7 @@ router.delete('/:codigo', async (req, res) => {
 
 // PUT - Editar candidato
 router.put('/:codigo', async (req, res) => {
-    const { nombre, apellido, propuestas, email, categoria } = req.body;
+    const { nombre, apellido, propuestas, email } = req.body;
 
     try {
         const updatedCandidate = await Candidate.findOneAndUpdate(
@@ -74,12 +73,11 @@ router.put('/:codigo', async (req, res) => {
                     nombre,
                     apellido,
                     propuestas,
-                    email,
-                    categoria // también puedes actualizar la categoría si se requiere
+                    email
                 }
             },
             { new: true }
-        ).populate('categoria');
+        );
 
         if (!updatedCandidate) {
             return res.status(404).json({ msg: 'Candidato no encontrado' });
