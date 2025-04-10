@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URI, {
 const eleccionesRoutes = require("./routes/elecciones");
 
 //Usar rutas
-app.use("/api/elecciones", eleccionesRoutes);
+app.use("/elecciones", eleccionesRoutes);
 
 //Ruta principal de prueba
 app.get("/", (req, res) => {
