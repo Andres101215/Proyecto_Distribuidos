@@ -14,6 +14,8 @@ const candidateSchema = new mongoose.Schema({
     ref: 'Eleccion',     // Referencia al modelo Eleccion
     required: true
   }
-});
+}, { collection: "Candidatos" }); // Forzamos el nombre de la colección
 
-module.exports = mongoose.model('Candidatos', candidateSchema);
+  const Candidato = mongoose.model("Candidatos", candidateSchema); // El primer parámetro no afecta la colección en la BD
+  
+  module.exports = Candidato;
