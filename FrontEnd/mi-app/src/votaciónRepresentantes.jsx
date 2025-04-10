@@ -19,23 +19,23 @@ export default function VotacionRepresentante() {
       try {
         const eleccionesRes = await axios.get('http://localhost:5000/api/elecciones/elecciones');
         const candidatosRes = await axios.get('http://localhost:5000/api/candidatos/candidates'); // ← tu endpoint para obtener todos los candidatos
-  
+
         const elecciones = eleccionesRes.data;
         const todosLosCandidatos = candidatosRes.data;
-  
+
         const eleccionActual = elecciones.find(e => e._id === id);
         if (!eleccionActual) {
           console.warn('No se encontró la elección con ID:', id);
           return;
         }
-  
+
         setTitulo(eleccionActual.titulo || 'Votación');
-  
+
         // Filtrar los candidatos cuyo ID esté en eleccionActual.candidatos (que es un array de strings)
         const candidatosFiltrados = todosLosCandidatos.filter(candidato =>
           eleccionActual.candidatos.includes(candidato._id)
         );
-  
+
         if (candidatosFiltrados.length > 0) {
           setCandidatos(candidatosFiltrados);
         } else {
@@ -45,14 +45,46 @@ export default function VotacionRepresentante() {
         console.error('Error al obtener datos:', error);
       }
     };
-  
+
     fetchDatos();
   }, [id]);
-  
+
 
   const handleSeleccion = (candidato) => {
     setSeleccionado(candidato);
   };
+
+  const registrarVoto = async (candidato) => {
+    const storedUser = localStorage.getItem('usuario');
+    const parsedUser = JSON.parse(storedUser);
+    console.log('id:', parsedUser.id);
+    const voterId = parsedUser.id;
+
+
+    console.log("eleccion id",id)
+    console.log("candidato id",candidato._id)
+
+    console.log("Candidato ID:", candidato._id);
+console.log("Tipo:", typeof candidato._id);
+
+    const voto = {
+      voterId: voterId,
+      electionId: id,
+      candidateId: candidato._id,
+      
+     // timestamp: new Date().toISOString()
+    };
+
+    try {
+      const res = await axios.post('http://localhost:5000/api/votos/votos', voto);
+      console.log('Voto registrado:', res.data);
+      setSeleccionado(candidato); // Actualizar interfaz con el nombre del candidato votado
+    } catch (error) {
+      console.error('Error al registrar el voto:', error);
+      alert('Error al registrar el voto');
+    }
+  };
+
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const handleLogout = () => navigate('/');
@@ -136,7 +168,7 @@ export default function VotacionRepresentante() {
                         className="w-40 h-40 object-cover rounded"
                       />
                       <button
-                        onClick={() => handleSeleccion(candidato)}
+                        onClick={() => registrarVoto(candidato)}
                         className="bg-yellow-300 text-black font-bold px-4 py-2 border border-black hover:bg-yellow-400 w-40"
                       >
                         Votar

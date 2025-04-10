@@ -99,7 +99,8 @@ const newVoter = new Voter({
           email: voter.email,
           nombre: voter.nombre,
           admin: voter.admin || false, // Asegura que siempre tenga este campo
-          codigo: voter.codigoEstudiantil
+          codigo: voter.codigoEstudiantil,
+          id :voter._id
         }
       });
     } catch (err) {

@@ -33,6 +33,8 @@ export default function Login() {
       // Guardamos el token y usuario en localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
+      localStorage.setItem('voterId', response.data.usuario.id);
+
 
       // Extraemos el usuario
       const usuario = response.data.usuario;
