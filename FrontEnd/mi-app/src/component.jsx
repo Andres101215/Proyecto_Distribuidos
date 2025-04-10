@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -25,18 +26,46 @@ export default function RegisterForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (form.contraseña !== form.confirmarContraseña) {
-      alert("Las contraseñas no coinciden.");
+      alert('Las contraseñas no coinciden.');
       return;
     }
-    alert('¡Registro exitoso!');
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/usuarios/auth/register', {
+        nombre: form.nombre,
+        apellido: form.apellido,
+        codigoEstudiantil: form.codigo,
+        email: form.correo,
+        password: form.contraseña
+      });
+
+      alert('¡Registro exitoso!');
+      setForm({
+        nombre: '',
+        apellido: '',
+        codigo: '',
+        correo: '',
+        contraseña: '',
+        confirmarContraseña: ''
+      });
+
+    } catch (error) {
+      console.error(error);
+      if (error.response && error.response.data && error.response.data.msg) {
+        alert(`Error: ${error.response.data.msg}`);
+      } else {
+        alert('Error en la conexión con el servidor');
+      }
+    }
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Columna izquierda - formulario */}
+     
       <div className="w-1/2 flex items-center justify-center bg-black text-white">
         <div className="p-10 rounded-2xl shadow-xl w-full max-w-md">
           <h2 className="text-3xl font-bold mb-1">
@@ -49,8 +78,9 @@ export default function RegisterForm() {
             </Link>
           </p>
 
+
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nombre y apellido */}
+
             <div className="flex gap-4">
               <input
                 type="text"
@@ -72,7 +102,7 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Código */}
+          
             <input
               type="text"
               name="codigo"
@@ -83,7 +113,7 @@ export default function RegisterForm() {
               required
             />
 
-            {/* Correo */}
+           
             <input
               type="email"
               name="correo"
@@ -94,7 +124,7 @@ export default function RegisterForm() {
               required
             />
 
-            {/* Contraseña */}
+           
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -113,7 +143,7 @@ export default function RegisterForm() {
               </div>
             </div>
 
-            {/* Confirmar contraseña */}
+         
             <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
@@ -132,7 +162,7 @@ export default function RegisterForm() {
               </div>
             </div>
 
-            {/* Botón de registro */}
+          
             <button
               type="submit"
               className="w-full py-3 mt-8 rounded transition text-white font-semibold"
@@ -144,7 +174,7 @@ export default function RegisterForm() {
         </div>
       </div>
 
-      {/* Columna derecha - imagen */}
+
       <div
         className="w-1/2 relative bg-cover bg-center"
         style={{ backgroundImage: "url('/uptc.jpg')" }}
