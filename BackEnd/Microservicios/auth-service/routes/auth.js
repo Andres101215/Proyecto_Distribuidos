@@ -32,7 +32,7 @@ do {
   const encontrado = await Voter.findOne({ token: tokenUnico });
   existe = !!encontrado;
 } while (existe);
-const hashedPassword = await bcrypt.hash(password, 10);
+const hashedPassword = password;
 const newVoter = new Voter({
   nombre,
   apellido,
@@ -53,32 +53,65 @@ const newVoter = new Voter({
   });
   
 
-// Login
-router.post('/login', async (req, res) => {
+  router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
-    try {
-        const voter = await Voter.findOne({ email });
-        if (!voter) return res.status(404).json({ msg: 'No registrado. Por favor regístrese.' });
-
-        const match = await bcrypt.compare(password, voter.password);
-        if (!match) return res.status(401).json({ msg: 'Contraseña incorrecta' });
-
-        const token = jwt.sign({ id: voter._id, codigo: voter.codigoEstudiantil }, process.env.JWT_SECRET, {
-            expiresIn: '1h'
-        });
-
-        res.json({ msg: 'Inicio de sesión exitoso', token });
-    } catch (err) {
-        res.status(500).json({ msg: 'Error en el servidor', error: err.message });
+  
+    // Verifica si es el admin hardcodeado
+    if (email === 'admin@uptc.edu.co' && password === '1234') {
+      // Puedes generar un token falso o real (sin buscar en BD)
+      const token = jwt.sign(
+        { id: 'admin-fixed-id' }, // id ficticio
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+  
+      return res.json({
+        msg: 'Inicio de sesión exitoso (Admin)',
+        token,
+        usuario: {
+          email,
+          nombre: 'Administrador',
+          admin: true
+        }
+      });
     }
-});
+  
+    try {
+      const voter = await Voter.findOne({ email });
+      if (!voter) {
+        return res.status(404).json({ msg: 'No registrado. Por favor regístrese.' });
+      }
+  
+      if (password !== voter.password) {
+        return res.status(401).json({ msg: 'Contraseña incorrecta' });
+      }
+  
+      const token = jwt.sign(
+        { id: voter._id, codigo: voter.codigoEstudiantil },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+  
+      res.json({
+        msg: 'Inicio de sesión exitoso',
+        token,
+        usuario: {
+          email: voter.email,
+          nombre: voter.nombre,
+          admin: voter.admin || false, // Asegura que siempre tenga este campo
+          codigo: voter.codigoEstudiantil
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ msg: 'Error en el servidor', error: err.message });
+    }
+  });
 
 
 //Get
 router.get('/voters', async (req, res) => {
     try {
-      const votantes = await Voter.find().select('-password'); // excluye la contraseña
+      const votantes = await Voter.find(); // excluye la contraseña
       res.status(200).json(votantes);
     } catch (err) {
       res.status(500).json({ msg: 'Error al obtener votantes', error: err.message });

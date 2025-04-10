@@ -3,8 +3,11 @@ import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+
 export default function Eleccion() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [opciones, setOpciones] = useState([]);
+  const [userData, setUserData] = useState(null);
   const [elecciones, setElecciones] = useState([]);
   const navigate = useNavigate();
 
@@ -12,6 +15,17 @@ export default function Eleccion() {
   const handleLogout = () => navigate('/');
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('usuario');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUserData(parsedUser);
+
+        console.log('Usuario cargado:', parsedUser);
+      } catch (error) {
+        console.error('Error al parsear los datos del usuario:', error);
+      }
+    }
     axios.get('http://localhost:5000/api/elecciones/elecciones')
       .then(response => {
         setElecciones(response.data); // Guardar todo el objeto de cada elección
@@ -33,8 +47,10 @@ export default function Eleccion() {
         <div className="bg-black text-white w-64 flex flex-col items-stretch p-6 relative z-10">
           <User size={40} className="mb-4 self-center" />
           <div className="text-center mb-6">
-            <p className="text-white">Nombre usuario</p>
-            <p className="text-sm text-gray-400">Código</p>
+          <div className="text-center mb-6">
+  <p className="text-white">{userData?.nombre || 'Usuario'}</p>
+  <p className="text-sm text-gray-400">{userData?.email || 'correo@ejemplo.com'}</p>
+</div>
           </div>
           <hr className="border-white my-2" />
           <button
