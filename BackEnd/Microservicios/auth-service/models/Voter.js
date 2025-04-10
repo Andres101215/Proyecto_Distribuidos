@@ -33,9 +33,8 @@ const voterSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   }
-}, {
-  collection: 'Votantes',
-  timestamps: true 
-});
+}, {collection: 'Votantes' });
 
-module.exports = mongoose.model('Votantes', voterSchema);
+const Votante = mongoose.model('Votantes', voterSchema);
+
+module.exports = Votante;
