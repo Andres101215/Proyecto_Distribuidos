@@ -39,6 +39,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+//Obtener una eleccion por ID (GET)
+router.get("/:id", async (req, res) => {
+  try {
+      const candidato = await Candidate.findById(req.params.id);
+      if (!candidato) {
+          return res.status(404).json({ mensaje: "Candidato no encontrada" });
+      }
+      res.json(candidato);
+  } catch (error) {
+      res.status(500).json({ mensaje: "Error al obtener el candidato", error });
+  }
+});
+
 // GET - Buscar por código estudiantil
 router.get('/:codigo', async (req, res) => {
     try {

@@ -1,6 +1,7 @@
 const axios = require('axios');
 const VOTO_SERVICE_URL = process.env.VOTO_SERVICE_URL;
 const ELECCION_SERVICE_URL = process.env.ELECCION_SERVICE_URL;
+const CANDIDATO_SERVICE_URL = process.env.CANDIDATO_SERVICE_URL;
 
 const contarVotos = async (eleccionId) => {
   const { data: votos } = await axios.get(`${VOTO_SERVICE_URL}?eleccionId=${eleccionId}`);

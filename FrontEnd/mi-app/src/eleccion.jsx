@@ -104,8 +104,10 @@ export default function Eleccion() {
           <h1 className="text-3xl font-bold text-white mb-10">Vota por el futuro de la UPTC</h1>
           <div className="space-y-6 w-full max-w-md">
             {elecciones.map((eleccion) => {
-              const deshabilitado = yaVotoEnEleccion(eleccion._id);
-
+              const yaVoto = yaVotoEnEleccion(eleccion._id);
+              const esFinalizada = eleccion.status === 'finalizado';
+              const deshabilitado = yaVoto || esFinalizada;
+            
               return (
                 <button
                   key={eleccion._id}
@@ -115,7 +117,8 @@ export default function Eleccion() {
                     deshabilitado ? 'bg-gray-500 cursor-not-allowed' : 'bg-black'
                   }`}
                 >
-                  {eleccion.titulo} {deshabilitado ? ' (Ya votaste)' : ''}
+                  {eleccion.titulo}
+                  {yaVoto ? ' (Ya votaste)' : esFinalizada ? ' (Finalizada)' : ''}
                 </button>
               );
             })}
