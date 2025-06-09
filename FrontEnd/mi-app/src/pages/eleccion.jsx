@@ -89,6 +89,8 @@ export default function Eleccion() {
         </button>
       )}
 
+    
+
       {/* Main content */}
       <div
         className="flex-1 relative flex items-center justify-center p-8"

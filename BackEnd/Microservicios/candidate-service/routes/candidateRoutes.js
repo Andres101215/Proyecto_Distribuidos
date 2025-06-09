@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-//Obtener una eleccion por ID (GET)
+//Obtener un candidato por ID (GET)
 router.get("/:id", async (req, res) => {
   try {
       const candidato = await Candidate.findById(req.params.id);

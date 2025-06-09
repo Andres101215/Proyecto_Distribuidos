@@ -62,7 +62,28 @@ export default function AdminEleccion() {
             <p className="text-sm text-gray-400">{usuario?.email}</p>
           </div>
           <hr className="border-white my-2" />
-          <button onClick={() => navigate('/')} className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full">Cerrar sesión</button>
+
+          {/* Opciones solo para administrador */}
+          {usuario?.email === 'admin@uptc.edu.co' && (
+            <>
+              <button onClick={() => navigate('/admin/elecciones')} className="py-2 text-left hover:bg-gray-800 px-3 rounded mb-1">
+                Elecciones
+              </button>
+              <button onClick={() => navigate('/admin/votantes')} className="py-2 text-left hover:bg-gray-800 px-3 rounded mb-1">
+                Votantes
+              </button>
+              <button onClick={() => navigate('/admin/candidatos')} className="py-2 text-left hover:bg-gray-800 px-3 rounded mb-4">
+                Candidatos
+              </button>
+
+              <button onClick={() => navigate('/')} className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full">
+                Cerrar sesión
+              </button>
+            </>
+          )}
+
+
+
           <hr className="border-white my-2" />
           <button onClick={() => setSidebarVisible(false)} className="absolute right-[-16px] top-1/2 transform -translate-y-1/2 bg-white text-black rounded-full p-1 hover:bg-gray-300 z-20">
             <ArrowLeft size={20} />
@@ -102,9 +123,8 @@ export default function AdminEleccion() {
                     </div>
                   )}
                   <button
-                    className={`w-full mt-2 py-2 rounded-lg font-semibold transition ${
-                      eleccion.finalizada ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                    }`}
+                    className={`w-full mt-2 py-2 rounded-lg font-semibold transition ${eleccion.finalizada ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-yellow-400 hover:bg-yellow-500 text-black'
+                      }`}
                     onClick={() => finalizarEleccion(eleccion._id)}
                     disabled={eleccion.finalizada}
                   >

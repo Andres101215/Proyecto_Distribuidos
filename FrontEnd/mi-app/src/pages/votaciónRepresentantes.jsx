@@ -6,8 +6,9 @@ import axios from 'axios';
 export default function VotacionRepresentante() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [seleccionado, setSeleccionado] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [candidatos, setCandidatos] = useState([]);
-  const [titulo, setTitulo] = useState(''); // ← para mostrar el título de la elección
+  const [titulo, setTitulo] = useState(''); 
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -15,6 +16,10 @@ export default function VotacionRepresentante() {
   const id = queryParams.get('id');
 
   useEffect(() => {
+     const storedUser = localStorage.getItem('usuario');
+      const parsedUser = JSON.parse(storedUser);
+        setUserData(parsedUser);
+
     const fetchDatos = async () => {
       try {
         const eleccionesRes = await axios.get('http://localhost:5000/api/elecciones/elecciones');
@@ -64,17 +69,17 @@ export default function VotacionRepresentante() {
       voterId: voterId,
       electionId: id,
       candidateId: candidato._id,
-   
+
     };
 
     try {
       const res = await axios.post('http://localhost:5000/api/votos/votos', voto);
-     
+
       setSeleccionado(candidato); // Actualizar interfaz con el nombre del candidato votado
       console.log(candidato)
 
       navigate(-1);
-      alert("El voto se registro correctamente por: "+candidato.nombre+" "+candidato.apellido)
+      alert("El voto se registro correctamente por: " + candidato.nombre + " " + candidato.apellido)
     } catch (error) {
       console.error('Error al registrar el voto:', error);
       alert('Error al registrar el voto');
@@ -84,41 +89,34 @@ export default function VotacionRepresentante() {
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const handleLogout = () => navigate('/');
-  const handleVolver = () => navigate('/admin');
+  const handleVolver = () => navigate('/eleccion');
 
   return (
     <div className="flex min-h-screen relative">
       {/* Sidebar */}
+
       {sidebarVisible && (
-        <div className="bg-black text-white w-64 flex flex-col justify-between p-6 relative z-10">
-          <div>
-            <User size={35} className="mb-4 self-center mx-auto" />
-            <div className="text-center mb-6">
-              <p className="text-white">Administrador</p>
-              <p className="text-sm text-gray-400">admin@uptc.edu.co</p>
-            </div>
-            <hr className="border-white my-2" />
-            <button className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full">
-              Crear elección
-            </button>
-            <hr className="border-white my-2" />
-            <button className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full">
-              Crear candidato
-            </button>
-            <hr className="border-white my-2" />
-            <button
-              onClick={handleLogout}
-              className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full"
-            >
-              Cerrar sesión
-            </button>
+        <div className="bg-black text-white w-64 flex flex-col items-stretch p-6 relative z-10">
+          <User size={40} className="mb-4 self-center" />
+          <div className="text-center mb-6">
+            <p className="text-white">{userData?.nombre || 'Usuario'}</p>
+            <p className="text-sm text-gray-400">{userData?.email || 'correo@ejemplo.com'}</p>
           </div>
+          <hr className="border-white my-2" />
+          <button
+            onClick={handleLogout}
+            className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full"
+          >
+            Cerrar sesión
+          </button>
+          <hr className="border-white my-2" />
           <button
             onClick={handleVolver}
             className="text-white hover:underline text-sm font-medium"
           >
             Volver al menú principal
           </button>
+
           <button
             onClick={toggleSidebar}
             className="absolute right-[-16px] top-1/2 transform -translate-y-1/2 bg-white text-black rounded-full p-1 hover:bg-gray-300 z-20"
