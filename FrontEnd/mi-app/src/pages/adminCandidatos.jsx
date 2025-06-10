@@ -10,14 +10,7 @@ export default function AdminCandidatos() {
     const [mensaje, setMensaje] = useState('');
     const [candidatos, setCandidatos] = useState([]);
     const [usuario, setUsuario] = useState(null);
-    const [formData, setFormData] = useState({
-        codigoEstudiantil: '',
-        nombre: '',
-        apellido: '',
-        email: '',
-        password: '',
-        propuesta: ''
-    });
+    const [formData, setFormData] = useState({ codigoEstudiantil: '', nombre: '', apellido: '', email: '', password: '', propuestas: '' });
     const [editandoCodigo, setEditandoCodigo] = useState(null);
     const navigate = useNavigate();
 
@@ -44,20 +37,13 @@ export default function AdminCandidatos() {
         e.preventDefault();
         try {
             if (editandoCodigo) {
-                await axios.put(`${BASE_URL}/candidates/${editandoCodigo}`, formData);
+                await axios.put(`http://localhost:5000/api/candidatos/candidates/${editandoCodigo}`, formData);
                 setMensaje('Candidato actualizado exitosamente');
             } else {
                 await axios.post(`${BASE_URL}/candidates/register`, formData);
                 setMensaje('Candidato registrado exitosamente');
             }
-            setFormData({
-                codigoEstudiantil: '',
-                nombre: '',
-                apellido: '',
-                email: '',
-                password: '',
-                propuesta: ''
-            });
+            setFormData({ codigoEstudiantil: '', nombre: '', apellido: '', email: '', password: '', propuestas: '' });
             setEditandoCodigo(null);
             fetchCandidatos();
         } catch (error) {
@@ -73,7 +59,7 @@ export default function AdminCandidatos() {
             apellido: candidato.apellido,
             email: candidato.email,
             password: '',
-            propuesta: candidato.propuesta || ''
+            propuestas: candidato.propuesta || ''
         });
         setEditandoCodigo(candidato.codigoEstudiantil);
     };
@@ -133,7 +119,7 @@ export default function AdminCandidatos() {
                             <input type="text" name="apellido" value={formData.apellido} onChange={handleInputChange} placeholder="Apellido" className="p-2 border rounded" required />
                             <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Correo" className="p-2 border rounded" required />
                             <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder={editandoCodigo ? 'Nueva contraseña (opcional)' : 'Contraseña'} className="p-2 border rounded" />
-                            <textarea name="propuesta" value={formData.propuesta} onChange={handleInputChange} placeholder="Propuesta del candidato" className="md:col-span-4 p-2 border rounded" rows="3" />
+                            <textarea name="propuestas" value={formData.propuestas} onChange={handleInputChange} placeholder="Propuesta del candidato" className="md:col-span-4 p-2 border rounded" rows="3" />
                             <div className="md:col-span-4 text-right">
                                 <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                                     {editandoCodigo ? 'Actualizar' : 'Registrar'}

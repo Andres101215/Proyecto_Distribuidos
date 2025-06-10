@@ -342,6 +342,15 @@ export default function AdminEleccion() {
                             </li>
                           ))}
                         </ul>
+                        <p className="font-medium">Resultados:</p>
+                        <ul className="mt-1 space-y-1">
+                          {resultado.resultado.resultados.map((g) => (
+                            <li key={g.codigoEstudiantil} className="flex justify-between">
+                              <span>Candidato: {g.nombreCompleto}</span>
+                              <span className="font-medium">votos: {g.votos} </span>
+                            </li>
+                          ))}
+                        </ul>
                         {resultado.resultado.empate && (
                           <p className="text-red-600 mt-2 font-semibold">¡Empate detectado!</p>
                         )}
