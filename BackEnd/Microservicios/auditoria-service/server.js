@@ -11,6 +11,6 @@ app.use(express.json());
 app.use('/auditoria', auditoriaRoutes);
 
 const PORT = process.env.PORT || 5008;
-app.listen(PORT, () => {
-  console.log(`auditoria-service corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`auditoria-service corriendo en http://0.0.0.0:${PORT}`);
 });
