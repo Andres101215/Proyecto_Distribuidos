@@ -3,7 +3,7 @@ import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const AUDITORIA_SERVICE_URL = 'http://localhost:5000/api/auditoria/auditoria'; // Ajusta a tu ruta real
+const AUDITORIA_SERVICE_URL = 'http://localhost:5000/api/auditoria/auditoria';
 
 export default function AdminEleccion() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -12,33 +12,51 @@ export default function AdminEleccion() {
   const [usuario, setUsuario] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const obtenerElecciones = async () => {
-      const { data } = await axios.get('http://localhost:5000/api/elecciones/elecciones'); // ELECCION_SERVICE
-      setElecciones(data);
-    };
+ useEffect(() => {
+  const obtenerElecciones = async () => {
+    const { data } = await axios.get('http://localhost:5000/api/elecciones/elecciones');
+    setElecciones(data);
 
-    const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
-    setUsuario(usuarioGuardado);
-    obtenerElecciones();
-  }, []);
+    const resultadosTemp = {};
+
+    // Ejecutar llamadas paralelas para elecciones finalizadas
+    const promesas = data.map(async (eleccion) => {
+      if (eleccion.finalizada) {
+        try {
+          const { data: resultado } = await axios.post(
+            `${AUDITORIA_SERVICE_URL}/ganador/${eleccion._id}`
+          );
+          resultadosTemp[eleccion._id] = { resultado };
+        } catch (err) {
+          console.error(`Error cargando resultado de elección ${eleccion._id}:`, err);
+        }
+      }
+    });
+
+    await Promise.all(promesas); // Esperar que todas terminen
+    setResultados(resultadosTemp); // Actualizar resultados todos a la vez
+  };
+
+  const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
+  setUsuario(usuarioGuardado);
+  obtenerElecciones();
+}, []);
+
 
   const finalizarEleccion = async (eleccionId) => {
     const confirm = window.confirm('¿Desea finalizar la elección?');
     if (!confirm) return;
 
     try {
-      await axios.put(`http://localhost:5000/api/auditoria/auditoria/finalizar-eleccion/${eleccionId}`);
-      const { data: conteo } = await axios.get(`http://localhost:5000/api/auditoria/auditoria/contar-votos/${eleccionId}`);
-      const { data: resultado } = await axios.post(`http://localhost:5000/api/auditoria/auditoria/ganador/${eleccionId}`);
+      await axios.put(`${AUDITORIA_SERVICE_URL}/finalizar-eleccion/${eleccionId}`);
+      await axios.get(`${AUDITORIA_SERVICE_URL}/contar-votos/${eleccionId}`);
+      const { data: resultado } = await axios.post(
+        `${AUDITORIA_SERVICE_URL}/ganador/${eleccionId}`
+      );
 
       setResultados(prev => ({
         ...prev,
-        [eleccionId]: {
-          finalizada: true,
-          conteo,
-          resultado
-        }
+        [eleccionId]: { resultado }
       }));
 
       setElecciones(prev =>
@@ -63,7 +81,6 @@ export default function AdminEleccion() {
           </div>
           <hr className="border-white my-2" />
 
-          {/* Opciones solo para administrador */}
           {usuario?.email === 'admin@uptc.edu.co' && (
             <>
               <button onClick={() => navigate('/admin/elecciones')} className="py-2 text-left hover:bg-gray-800 px-3 rounded mb-1">
@@ -75,14 +92,11 @@ export default function AdminEleccion() {
               <button onClick={() => navigate('/admin/candidatos')} className="py-2 text-left hover:bg-gray-800 px-3 rounded mb-4">
                 Candidatos
               </button>
-
               <button onClick={() => navigate('/')} className="py-2 bg-black text-white font-semibold hover:bg-gray-800 transition text-center w-full">
                 Cerrar sesión
               </button>
             </>
           )}
-
-
 
           <hr className="border-white my-2" />
           <button onClick={() => setSidebarVisible(false)} className="absolute right-[-16px] top-1/2 transform -translate-y-1/2 bg-white text-black rounded-full p-1 hover:bg-gray-300 z-20">
@@ -108,13 +122,16 @@ export default function AdminEleccion() {
                 <div key={eleccion._id} className="bg-white rounded-2xl shadow-lg p-6 relative">
                   <h2 className="text-xl font-bold mb-2 text-center">{eleccion.nombre}</h2>
                   <p className="text-sm text-gray-600 text-center mb-4">{eleccion.descripcion}</p>
+
                   {resultado && (
                     <div className="mb-4">
                       <p className="text-green-700 font-semibold">Elección finalizada</p>
                       <p className="text-sm mt-2"><strong>Ganador(es):</strong></p>
                       <ul className="list-disc list-inside">
                         {resultado.resultado.ganadores.map(g => (
-                          <li key={g.candidatoId}>ID: {g.candidatoId} — Votos: {g.votos}</li>
+                          <li key={g.candidatoId}>
+                            Candidato: {g.nombreCompleto} — Votos: {g.votos}
+                          </li>
                         ))}
                       </ul>
                       {resultado.resultado.empate && (
@@ -122,14 +139,15 @@ export default function AdminEleccion() {
                       )}
                     </div>
                   )}
-                  <button
-                    className={`w-full mt-2 py-2 rounded-lg font-semibold transition ${eleccion.finalizada ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                      }`}
-                    onClick={() => finalizarEleccion(eleccion._id)}
-                    disabled={eleccion.finalizada}
-                  >
-                    ¿Desea finalizar elección?
-                  </button>
+
+                  {!eleccion.finalizada && (
+                    <button
+                      className="w-full mt-2 py-2 rounded-lg font-semibold bg-yellow-400 hover:bg-yellow-500 text-black transition"
+                      onClick={() => finalizarEleccion(eleccion._id)}
+                    >
+                      ¿Desea finalizar elección?
+                    </button>
+                  )}
                 </div>
               );
             })}
