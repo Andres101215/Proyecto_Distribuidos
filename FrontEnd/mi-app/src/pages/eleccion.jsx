@@ -107,7 +107,7 @@ export default function Eleccion() {
           <div className="space-y-6 w-full max-w-md">
             {elecciones.map((eleccion) => {
               const yaVoto = yaVotoEnEleccion(eleccion._id);
-              const esFinalizada = eleccion.status === 'finalizado';
+              const esFinalizada = eleccion.estado === 'finalizado';
               const deshabilitado = yaVoto || esFinalizada;
             
               return (

@@ -35,7 +35,7 @@ export default function AdminVotantes() {
                 await axios.put(`http://localhost:5000/api/usuarios/auth/voters/${editandoCodigo}`, formData);
                 setMensaje('Estudiante actualizado exitosamente');
             } else {
-                await axios.post('http://localhost:5000/api/usuarios/auth/voters', formData);
+                await axios.post('http://localhost:5000/api/usuarios/auth/register', formData);
             }
             setFormData({ codigoEstudiantil: '', nombre: '', apellido: '', email: '', password: '' });
             setEditandoCodigo(null);

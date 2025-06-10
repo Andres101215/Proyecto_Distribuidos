@@ -38,38 +38,46 @@ const declararGanador = async (eleccionId) => {
     return {
       eleccionId,
       mensaje: "No hay votos registrados",
-      ganadores: []
+      ganadores: [],
+      resultados: []
     };
   }
 
   const maxVotos = Math.max(...Object.values(conteo));
   const ganadoresIds = Object.keys(conteo).filter(id => conteo[id] === maxVotos);
 
-  const ganadores = await Promise.all(
-    ganadoresIds.map(async (id) => {
-
+  // Obtener todos los resultados con nombre y votos
+  const resultados = await Promise.all(
+    Object.entries(conteo).map(async ([id, votos]) => {
       try {
         const { data: candidato } = await axios.get(`${CANDIDATO_SERVICE_URL}/${id}`);
         return {
+          id,
           nombreCompleto: `${candidato.nombre} ${candidato.apellido}`,
-          votos: maxVotos
+          votos
         };
       } catch (error) {
         console.error(`Error obteniendo candidato con ID ${id}:`, error.message);
         return {
+          id,
           nombreCompleto: 'Nombre no disponible',
-          votos: maxVotos
+          votos
         };
       }
     })
   );
 
+  // Filtrar los ganadores desde los resultados
+  const ganadores = resultados.filter(r => r.votos === maxVotos);
+
   return {
     eleccionId,
     maxVotos,
     ganadores,
-    empate: ganadores.length > 1
+    empate: ganadores.length > 1,
+    resultados
   };
 };
+
 
 module.exports = { contarVotos, finalizarEleccion, declararGanador };
