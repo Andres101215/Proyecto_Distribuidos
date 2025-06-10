@@ -16,6 +16,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.listen(port, () => {
-  console.log(`API Gateway corriendo en http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`API Gateway corriendo en http://0.0.0.0:${port}`);
 });
