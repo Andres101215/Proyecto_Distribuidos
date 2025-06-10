@@ -8,6 +8,9 @@ const AUDITORIA_SERVICE_URL = 'http://localhost:5000/api/auditoria/auditoria';
 const CANDIDATO_SERVICE_URL = 'http://localhost:5005/candidates';
 
 export default function AdminEleccion() {
+
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [candidatosModal, setCandidatosModal] = useState([]);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [elecciones, setElecciones] = useState([]);
   const [resultados, setResultados] = useState({});
@@ -93,11 +96,23 @@ export default function AdminEleccion() {
       descripcion: eleccion.descripcion,
       estado: eleccion.estado || 'activo',
     });
-    setCandidatosAgregados(
-      candidatos.filter((c) => eleccion.candidateId.includes(c.codigoEstudiantil))
+
+    // Buscar candidatos por su código
+    const candidatosSeleccionados = candidatos.filter((c) =>
+      eleccion.candidatos.includes(c.codigoEstudiantil)
     );
+    setCandidatosAgregados(candidatosSeleccionados);
+
     setModoEdicion(true);
     setEditId(eleccion._id);
+  };
+
+   const abrirModalCandidatos = (eleccion) => {
+    const candidatosDeEleccion = candidatos.filter((c) =>
+      eleccion.candidatos?.includes(c.codigoEstudiantil)
+    );
+    setCandidatosModal(candidatosDeEleccion);
+    setMostrarModal(true);
   };
 
   const eliminarEleccion = async (id) => {
@@ -128,6 +143,8 @@ export default function AdminEleccion() {
       alert('Error al finalizar la elección.');
     }
   };
+
+  
 
   return (
     <div className="flex min-h-screen relative">
@@ -275,52 +292,115 @@ export default function AdminEleccion() {
             {elecciones.map((eleccion) => {
               const resultado = resultados[eleccion._id];
               return (
-                <div key={eleccion._id} className="bg-white rounded-2xl shadow-lg p-6 relative">
-                  <h2 className="text-xl font-bold mb-2 text-center">{eleccion.nombre}</h2>
+                <div key={eleccion._id} className="bg-white rounded-2xl shadow-lg p-6 relative hover:shadow-xl transition-shadow">
+                  <h2 className="text-xl font-bold mb-2 text-center text-gray-800">{eleccion.nombre}</h2>
                   <p className="text-sm text-gray-600 text-center mb-2">{eleccion.descripcion}</p>
-                  <p className="text-sm text-gray-500 text-center mb-2">electionId: {eleccion.electionId}</p>
-                  <p className={`text-sm text-center mb-4 font-semibold ${eleccion.estado === 'activo' ? 'text-green-600' : 'text-red-600'}`}>
-                    Estado: {eleccion.estado}
-                  </p>
+                  <p className="text-sm text-gray-500 text-center mb-2">ID: {eleccion.electionId}</p>
+                  <div className="text-center mb-4">
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                      eleccion.estado === 'activo' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {eleccion.estado.toUpperCase()}
+                    </span>
+                  </div>
+                  
                   {resultado && (
-                    <div className="mb-4">
-                      <p className="text-green-700 font-semibold">Elección finalizada</p>
-                      <p className="text-sm mt-2"><strong>Ganador(es):</strong></p>
-                      <ul className="list-disc list-inside">
-                        {resultado.resultado.ganadores.map((g) => (
-                          <li key={g.codigoEstudiantil}>ID: {g.codigoEstudiantil} — Votos: {g.votos}</li>
-                        ))}
-                      </ul>
-                      {resultado.resultado.empate && (
-                        <p className="text-red-600 mt-2">¡Empate detectado!</p>
-                      )}
+                    <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-green-700 font-semibold mb-2">Elección finalizada</p>
+                      <div className="text-sm">
+                        <p className="font-medium">Ganador(es):</p>
+                        <ul className="mt-1 space-y-1">
+                          {resultado.resultado.ganadores.map((g) => (
+                            <li key={g.codigoEstudiantil} className="flex justify-between">
+                              <span>ID: {g.codigoEstudiantil}</span>
+                              <span className="font-medium">{g.votos} votos</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {resultado.resultado.empate && (
+                          <p className="text-red-600 mt-2 font-semibold">¡Empate detectado!</p>
+                        )}
+                      </div>
                     </div>
                   )}
-                  <div className="flex justify-between items-center mt-4 space-x-2">
-                    <button onClick={() => editarEleccion(eleccion)} className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-                      <Edit size={16} className="inline-block mr-1" /> Editar
+                  
+                  <button
+                    onClick={() => abrirModalCandidatos(eleccion)}
+                    className="w-full mb-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
+                  >
+                    Ver Candidatos ({eleccion.candidatos?.length || 0})
+                  </button>
+
+                  <div className="flex gap-2 mb-3">
+                    <button 
+                      onClick={() => editarEleccion(eleccion)} 
+                      className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
+                    >
+                      <Edit size={16} className="mr-1" /> Editar
                     </button>
-                    <button onClick={() => eliminarEleccion(eleccion._id)} className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600">
-                      <Trash2 size={16} className="inline-block mr-1" /> Eliminar
+                    <button 
+                      onClick={() => eliminarEleccion(eleccion._id)} 
+                      className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center font-medium"
+                    >
+                      <Trash2 size={16} className="mr-1" /> Eliminar
                     </button>
                   </div>
+                  
                   <button
-                    className={`w-full mt-3 py-2 rounded-lg font-semibold transition ${
+                    onClick={() => finalizarEleccion(eleccion._id)}
+                    disabled={eleccion.estado === 'finalizado'}
+                    className={`w-full py-2 rounded-lg font-semibold transition-colors ${
                       eleccion.estado === 'finalizado'
                         ? 'bg-gray-400 text-white cursor-not-allowed'
                         : 'bg-yellow-400 hover:bg-yellow-500 text-black'
                     }`}
-                    onClick={() => finalizarEleccion(eleccion._id)}
-                    disabled={eleccion.estado === 'finalizado'}
                   >
-                    ¿Desea finalizar elección?
+                    {eleccion.estado === 'finalizado' ? 'Elección Finalizada' : 'Finalizar Elección'}
                   </button>
                 </div>
               );
             })}
           </div>
+
+          {elecciones.length === 0 && (
+            <div className="text-center text-white mt-10">
+              <p className="text-xl">No hay elecciones creadas</p>
+              <p className="text-gray-300 mt-2">Crea tu primera elección usando el formulario anterior</p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Modal de candidatos */}
+      {mostrarModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md relative max-h-96 overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-center text-gray-800">Candidatos de la Elección</h3>
+            {candidatosModal.length > 0 ? (
+              <div className="space-y-3">
+                {candidatosModal.map((c) => (
+                  <div key={c.codigoEstudiantil} className="p-4 border rounded-lg shadow-sm bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <p className="font-semibold text-gray-800">{c.nombre} {c.apellido}</p>
+                    <p className="text-sm text-gray-600">Código: {c.codigoEstudiantil}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No hay candidatos asociados a esta elección.</p>
+              </div>
+            )}
+            <button
+              onClick={() => setMostrarModal(false)}
+              className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
