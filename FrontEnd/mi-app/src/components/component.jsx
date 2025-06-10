@@ -30,12 +30,17 @@ export default function RegisterForm() {
     e.preventDefault();
 
     if (form.contraseña !== form.confirmarContraseña) {
-      alert('Las contraseñas no coinciden.');
+      alert(' Las contraseñas no coinciden.');
+      return;
+    }
+
+    if (form.contraseña.length < 6) {
+      alert(' La contraseña debe tener al menos 6 caracteres.');
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/usuarios/auth/register', {
+      const response = await axios.post('https://api-gateway-14jr.onrender.com/api/usuarios/auth/register', {
         nombre: form.nombre,
         apellido: form.apellido,
         codigoEstudiantil: form.codigo,
@@ -43,7 +48,7 @@ export default function RegisterForm() {
         password: form.contraseña
       });
 
-      alert('¡Registro exitoso!');
+      alert('¡Registro exitoso! Puedes iniciar sesión.');
       setForm({
         nombre: '',
         apellido: '',
@@ -52,16 +57,16 @@ export default function RegisterForm() {
         contraseña: '',
         confirmarContraseña: ''
       });
-
     } catch (error) {
       console.error(error);
-      if (error.response && error.response.data && error.response.data.msg) {
+      if (error.response?.data?.msg) {
         alert(`Error: ${error.response.data.msg}`);
       } else {
-        alert('Error en la conexión con el servidor');
+        alert('Error en la conexión con el servidor.');
       }
     }
   };
+
 
   return (
     <div className="min-h-screen flex">

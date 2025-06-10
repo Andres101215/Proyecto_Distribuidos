@@ -3,12 +3,13 @@ import { ArrowLeft, User, Trash2, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const ELECCION_SERVICE_URL = 'http://localhost:5000/api/elecciones/elecciones';
-const AUDITORIA_SERVICE_URL = 'http://localhost:5000/api/auditoria/auditoria';
-const CANDIDATO_SERVICE_URL = 'http://localhost:5005/candidates';
+const API_GATEWAY = 'https://api-gateway-14jr.onrender.com/api';
+
+const ELECCION_SERVICE_URL = `${API_GATEWAY}/elecciones/elecciones`;
+const AUDITORIA_SERVICE_URL = `${API_GATEWAY}/auditoria/auditoria`;
+const CANDIDATO_SERVICE_URL = `${API_GATEWAY}/candidatos/candidates`;
 
 export default function AdminEleccion() {
-
   const [mostrarModal, setMostrarModal] = useState(false);
   const [candidatosModal, setCandidatosModal] = useState([]);
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -52,9 +53,6 @@ export default function AdminEleccion() {
     obtenerElecciones();
     obtenerCandidatos();
   }, []);
-
-
-
 
   const manejarCambio = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -100,12 +98,10 @@ export default function AdminEleccion() {
       estado: eleccion.estado || 'activo',
     });
 
-    // Buscar candidatos por su código
     const candidatosSeleccionados = candidatos.filter((c) =>
       eleccion.candidatos.includes(c._id)
     );
     setCandidatosAgregados(candidatosSeleccionados);
-
     setModoEdicion(true);
     setEditId(eleccion._id);
   };
@@ -131,17 +127,14 @@ export default function AdminEleccion() {
   const finalizarEleccion = async (eleccionId) => {
     if (!window.confirm('¿Desea finalizar la elección?')) return;
     try {
-      // 1. Finaliza la elección
       await axios.put(`${AUDITORIA_SERVICE_URL}/finalizar-eleccion/${eleccionId}`);
-
-      // 2. Declara al ganador (ya incluye el conteo)
       const { data: resultado } = await axios.post(`${AUDITORIA_SERVICE_URL}/ganador/${eleccionId}`);
 
-      // 3. Guarda el resultado y marca la elección como finalizada en UI
       setResultados((prev) => ({
         ...prev,
-        [eleccionId]: { finalizada: true, resultado }, // 👈 ya no necesitas "conteo"
+        [eleccionId]: { finalizada: true, resultado },
       }));
+
       setElecciones((prev) =>
         prev.map((e) => (e._id === eleccionId ? { ...e, estado: 'finalizado' } : e))
       );
@@ -151,21 +144,20 @@ export default function AdminEleccion() {
     }
   };
 
-   const resultadosEleccion = async (eleccionId) => {
+  const resultadosEleccion = async (eleccionId) => {
     try {
       const { data: resultado } = await axios.post(`${AUDITORIA_SERVICE_URL}/ganador/${eleccionId}`);
-
-      // 3. Guarda el resultado y marca la elección como finalizada en UI
       setResultados((prev) => ({
         ...prev,
-        [eleccionId]: { finalizada: true, resultado }, // 👈 ya no necesitas "conteo"
+        [eleccionId]: { finalizada: true, resultado },
       }));
+
       setElecciones((prev) =>
         prev.map((e) => (e._id === eleccionId ? { ...e, estado: 'finalizado' } : e))
       );
     } catch (err) {
       console.error(err);
-      alert('Error al finalizar la elección.');
+      alert('Error al obtener resultados.');
     }
   };
 

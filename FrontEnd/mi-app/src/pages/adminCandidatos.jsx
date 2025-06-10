@@ -37,7 +37,7 @@ export default function AdminCandidatos() {
         e.preventDefault();
         try {
             if (editandoCodigo) {
-                await axios.put(`http://localhost:5000/api/candidatos/candidates/${editandoCodigo}`, formData);
+            await axios.put(`${BASE_URL}/candidates/${editandoCodigo}`, formData);
                 setMensaje('Candidato actualizado exitosamente');
             } else {
                 await axios.post(`${BASE_URL}/candidates/register`, formData);

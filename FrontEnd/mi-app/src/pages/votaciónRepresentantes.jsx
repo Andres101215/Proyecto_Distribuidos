@@ -22,8 +22,8 @@ export default function VotacionRepresentante() {
 
     const fetchDatos = async () => {
       try {
-        const eleccionesRes = await axios.get('http://localhost:5000/api/elecciones/elecciones');
-        const candidatosRes = await axios.get('http://localhost:5000/api/candidatos/candidates'); // ← tu endpoint para obtener todos los candidatos
+        const eleccionesRes = await axios.get('https://api-gateway-14jr.onrender.com/api/elecciones/elecciones');
+        const candidatosRes = await axios.get('https://api-gateway-14jr.onrender.com/api/candidatos/candidates');
 
         const elecciones = eleccionesRes.data;
         const todosLosCandidatos = candidatosRes.data;
@@ -36,7 +36,6 @@ export default function VotacionRepresentante() {
 
         setTitulo(eleccionActual.titulo || 'Votación');
 
-        // Filtrar los candidatos cuyo ID esté en eleccionActual.candidatos (que es un array de strings)
         const candidatosFiltrados = todosLosCandidatos.filter(candidato =>
           eleccionActual.candidatos.includes(candidato._id)
         );
@@ -54,42 +53,32 @@ export default function VotacionRepresentante() {
     fetchDatos();
   }, [id]);
 
-
-  const handleSeleccion = (candidato) => {
-    setSeleccionado(candidato);
-  };
-
   const registrarVoto = async (candidato) => {
     const storedUser = localStorage.getItem('usuario');
     const parsedUser = JSON.parse(storedUser);
-
     const voterId = parsedUser.id;
 
     const voto = {
-      voterId: voterId,
+      voterId,
       electionId: id,
       candidateId: candidato._id,
-
     };
 
     try {
-      const res = await axios.post('http://localhost:5000/api/votos/votos', voto);
-
-      setSeleccionado(candidato); // Actualizar interfaz con el nombre del candidato votado
-      //  console.log(candidato)
-
+      await axios.post('https://api-gateway-14jr.onrender.com/api/votos/votos', voto);
+      setSeleccionado(candidato);
       navigate(-1);
-      alert("El voto se registro correctamente por: " + candidato.nombre + " " + candidato.apellido)
+      alert("El voto se registró correctamente por: " + candidato.nombre + " " + candidato.apellido);
     } catch (error) {
       console.error('Error al registrar el voto:', error);
       alert('Error al registrar el voto');
     }
   };
 
-
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const handleLogout = () => navigate('/');
   const handleVolver = () => navigate('/eleccion');
+
 
   return (
     <div className="flex min-h-screen relative">

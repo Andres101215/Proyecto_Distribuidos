@@ -14,41 +14,33 @@ export default function Eleccion() {
   const handleLogout = () => navigate('/');
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('usuario');
-    if (storedUser) {
+    const fetchData = async () => {
+      const storedUser = localStorage.getItem('usuario');
+      if (!storedUser) return;
+
       try {
         const parsedUser = JSON.parse(storedUser);
         setUserData(parsedUser);
 
-        // Obtener elecciones
-        axios.get('http://localhost:5000/api/elecciones/elecciones')
-          .then(response => {
-            setElecciones(response.data);
-          })
-          .catch(error => {
-            console.error('Error al obtener elecciones:', error);
-          });
+        const [eleccionesRes, votosRes] = await Promise.all([
+          axios.get('https://api-gateway-14jr.onrender.com/api/elecciones/elecciones'),
+          axios.get(`https://api-gateway-14jr.onrender.com/api/votos/votos?voterId=${parsedUser.id}`)
+        ]);
 
-        // Obtener votos del usuario
-        axios.get(`http://localhost:5000/api/votos/votos?voterId=${parsedUser.id}`)
-          .then(response => {
-            setVotosUsuario(response.data);
-          })
-          .catch(error => {
-            console.error('Error al obtener votos del usuario:', error);
-          });
-
+        setElecciones(eleccionesRes.data);
+        setVotosUsuario(votosRes.data);
       } catch (error) {
-        console.error('Error al parsear los datos del usuario:', error);
+        console.error('Error al obtener datos:', error);
       }
-    }
+    };
+
+    fetchData();
   }, []);
 
   const handleSelect = (eleccion) => {
     navigate(`/votacion?id=${encodeURIComponent(eleccion._id)}`);
   };
 
-  // Función para saber si ya votó en esa elección
   const yaVotoEnEleccion = (eleccionId) => {
     return votosUsuario.some(voto => voto.electionId === eleccionId);
   };
