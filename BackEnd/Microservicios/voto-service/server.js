@@ -30,6 +30,6 @@ app.get("/", (req, res) => {
 
 //Iniciar servidor
 const PORT = process.env.PORT || 5006;
-app.listen(PORT, () => {
-    console.log(` Servidor corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`VotoService corriendo en http://0.0.0.0:${PORT}`);
 });
