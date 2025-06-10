@@ -15,6 +15,6 @@ mongoose.connect(process.env.MONGO_URI)
 
     app.use('/candidates', require('./routes/candidateRoutes'));
 
-app.listen(PORT, () => {
-    console.log(`CandidateService ejecutándose en http://localhost:${PORT}`);
-});
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`CandidateService ejecutándose en http://0.0.0.0:${PORT}`);
+});s
