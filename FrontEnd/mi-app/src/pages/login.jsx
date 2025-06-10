@@ -25,21 +25,20 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:5000/api/usuarios/auth/login', {
-        email: form.correo,
-        password: form.contraseña
-      });
+      const response = await axios.post(
+        'https://api-gateway-14jr.onrender.com/api/usuarios/auth/login',
+        {
+          email: form.correo,
+          password: form.contraseña
+        }
+      );
 
-      // Guardamos el token y usuario en localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
       localStorage.setItem('voterId', response.data.usuario.id);
 
-
-      // Extraemos el usuario
       const usuario = response.data.usuario;
 
-      // Redirigir según si es admin
       if (usuario.admin === true || usuario.email === 'admin@uptc.edu.co') {
         navigate('/admin');
       } else {
@@ -57,7 +56,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Columna izquierda - formulario */}
       <div className="w-1/2 flex items-center justify-center bg-black text-white">
         <div className="p-10 rounded-2xl shadow-xl w-full max-w-md">
           <h2 className="text-3xl font-bold mb-6">
@@ -111,7 +109,6 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Columna derecha - imagen */}
       <div
         className="w-1/2 relative bg-cover bg-center"
         style={{ backgroundImage: "url('/uptc.jpg')" }}

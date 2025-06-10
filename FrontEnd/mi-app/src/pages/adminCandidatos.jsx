@@ -3,12 +3,21 @@ import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const BASE_URL = 'https://api-gateway-14jr.onrender.com/api/candidatos';
+
 export default function AdminCandidatos() {
     const [sidebarVisible, setSidebarVisible] = useState(true);
     const [mensaje, setMensaje] = useState('');
     const [candidatos, setCandidatos] = useState([]);
     const [usuario, setUsuario] = useState(null);
-    const [formData, setFormData] = useState({ codigoEstudiantil: '', nombre: '', apellido: '', email: '', password: '', propuesta: '' });
+    const [formData, setFormData] = useState({
+        codigoEstudiantil: '',
+        nombre: '',
+        apellido: '',
+        email: '',
+        password: '',
+        propuesta: ''
+    });
     const [editandoCodigo, setEditandoCodigo] = useState(null);
     const navigate = useNavigate();
 
@@ -19,8 +28,12 @@ export default function AdminCandidatos() {
     }, []);
 
     const fetchCandidatos = async () => {
-        const { data } = await axios.get('http://localhost:5000/api/candidatos/candidates');
-        setCandidatos(data);
+        try {
+            const { data } = await axios.get(`${BASE_URL}/candidates`);
+            setCandidatos(data);
+        } catch (error) {
+            console.error('Error al cargar candidatos:', error);
+        }
     };
 
     const handleInputChange = e => {
@@ -31,13 +44,20 @@ export default function AdminCandidatos() {
         e.preventDefault();
         try {
             if (editandoCodigo) {
-                await axios.put(`hhttp://localhost:5000/api/candidatos/candidates/${editandoCodigo}`, formData);
+                await axios.put(`${BASE_URL}/candidates/${editandoCodigo}`, formData);
                 setMensaje('Candidato actualizado exitosamente');
             } else {
-                await axios.post('http://localhost:5000/api/candidatos/candidates/register/', formData);
+                await axios.post(`${BASE_URL}/candidates/register`, formData);
                 setMensaje('Candidato registrado exitosamente');
             }
-            setFormData({ codigoEstudiantil: '', nombre: '', apellido: '', email: '', password: '', propuesta: '' });
+            setFormData({
+                codigoEstudiantil: '',
+                nombre: '',
+                apellido: '',
+                email: '',
+                password: '',
+                propuesta: ''
+            });
             setEditandoCodigo(null);
             fetchCandidatos();
         } catch (error) {
@@ -61,7 +81,7 @@ export default function AdminCandidatos() {
     const handleEliminar = async codigoEstudiantil => {
         if (window.confirm('¿Está seguro de eliminar este candidato?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/candidatos/candidates/${codigoEstudiantil}`);
+                await axios.delete(`${BASE_URL}/candidates/${codigoEstudiantil}`);
                 setMensaje('Candidato eliminado correctamente');
                 fetchCandidatos();
             } catch (error) {
