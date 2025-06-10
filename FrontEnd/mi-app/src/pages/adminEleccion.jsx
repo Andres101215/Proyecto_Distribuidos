@@ -53,6 +53,9 @@ export default function AdminEleccion() {
     obtenerCandidatos();
   }, []);
 
+
+
+
   const manejarCambio = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -62,7 +65,7 @@ export default function AdminEleccion() {
     try {
       const payload = {
         ...formData,
-        candidatos: candidatosAgregados.map((c) => c.codigoEstudiantil),
+        candidatos: candidatosAgregados.map((c) => c._id),
       };
 
       if (modoEdicion) {
@@ -99,7 +102,7 @@ export default function AdminEleccion() {
 
     // Buscar candidatos por su código
     const candidatosSeleccionados = candidatos.filter((c) =>
-      eleccion.candidatos.includes(c.codigoEstudiantil)
+      eleccion.candidatos.includes(c._id)
     );
     setCandidatosAgregados(candidatosSeleccionados);
 
@@ -107,9 +110,9 @@ export default function AdminEleccion() {
     setEditId(eleccion._id);
   };
 
-   const abrirModalCandidatos = (eleccion) => {
+  const abrirModalCandidatos = (eleccion) => {
     const candidatosDeEleccion = candidatos.filter((c) =>
-      eleccion.candidatos?.includes(c.codigoEstudiantil)
+      eleccion.candidatos?.includes(c._id)
     );
     setCandidatosModal(candidatosDeEleccion);
     setMostrarModal(true);
@@ -128,12 +131,16 @@ export default function AdminEleccion() {
   const finalizarEleccion = async (eleccionId) => {
     if (!window.confirm('¿Desea finalizar la elección?')) return;
     try {
+      // 1. Finaliza la elección
       await axios.put(`${AUDITORIA_SERVICE_URL}/finalizar-eleccion/${eleccionId}`);
-      const { data: conteo } = await axios.get(`${AUDITORIA_SERVICE_URL}/contar-votos/${eleccionId}`);
+
+      // 2. Declara al ganador (ya incluye el conteo)
       const { data: resultado } = await axios.post(`${AUDITORIA_SERVICE_URL}/ganador/${eleccionId}`);
+
+      // 3. Guarda el resultado y marca la elección como finalizada en UI
       setResultados((prev) => ({
         ...prev,
-        [eleccionId]: { finalizada: true, conteo, resultado },
+        [eleccionId]: { finalizada: true, resultado }, // 👈 ya no necesitas "conteo"
       }));
       setElecciones((prev) =>
         prev.map((e) => (e._id === eleccionId ? { ...e, estado: 'finalizado' } : e))
@@ -144,7 +151,24 @@ export default function AdminEleccion() {
     }
   };
 
-  
+   const resultadosEleccion = async (eleccionId) => {
+    try {
+      const { data: resultado } = await axios.post(`${AUDITORIA_SERVICE_URL}/ganador/${eleccionId}`);
+
+      // 3. Guarda el resultado y marca la elección como finalizada en UI
+      setResultados((prev) => ({
+        ...prev,
+        [eleccionId]: { finalizada: true, resultado }, // 👈 ya no necesitas "conteo"
+      }));
+      setElecciones((prev) =>
+        prev.map((e) => (e._id === eleccionId ? { ...e, estado: 'finalizado' } : e))
+      );
+    } catch (err) {
+      console.error(err);
+      alert('Error al finalizar la elección.');
+    }
+  };
+
 
   return (
     <div className="flex min-h-screen relative">
@@ -212,7 +236,7 @@ export default function AdminEleccion() {
               >
                 <option value="">Seleccione un candidato</option>
                 {candidatos.map((c) => (
-                  <option key={c._id} value={c.codigoEstudiantil}>
+                  <option key={c._id} value={c._id}>
                     {c.nombre} {c.apellido} - {c.codigoEstudiantil}
                   </option>
                 ))}
@@ -220,8 +244,8 @@ export default function AdminEleccion() {
               <button
                 type="button"
                 onClick={() => {
-                  const candidatoSeleccionado = candidatos.find(c => c.codigoEstudiantil === formData.candidateId);
-                  if (!candidatoSeleccionado || candidatosAgregados.some(c => c.codigoEstudiantil === candidatoSeleccionado.codigoEstudiantil)) return;
+                  const candidatoSeleccionado = candidatos.find(c => c._id === formData.candidateId);
+                  if (!candidatoSeleccionado || candidatosAgregados.some(c => c._id === candidatoSeleccionado._id)) return;
                   setCandidatosAgregados(prev => [...prev, candidatoSeleccionado]);
                   setFormData(prev => ({ ...prev, candidateId: '' }));
                 }}
@@ -243,7 +267,7 @@ export default function AdminEleccion() {
                 </thead>
                 <tbody>
                   {candidatosAgregados.map((c) => (
-                    <tr key={c.codigoEstudiantil}>
+                    <tr key={c._id}>
                       <td className="border px-2 py-1">{c.nombre} {c.apellido}</td>
                       <td className="border px-2 py-1">{c.codigoEstudiantil}</td>
                       <td className="border px-2 py-1 text-center">
@@ -251,7 +275,7 @@ export default function AdminEleccion() {
                           type="button"
                           onClick={() =>
                             setCandidatosAgregados(prev =>
-                              prev.filter((cand) => cand.codigoEstudiantil !== c.codigoEstudiantil)
+                              prev.filter((cand) => cand._id !== c._id)
                             )
                           }
                           className="text-red-500 hover:underline"
@@ -297,15 +321,14 @@ export default function AdminEleccion() {
                   <p className="text-sm text-gray-600 text-center mb-2">{eleccion.descripcion}</p>
                   <p className="text-sm text-gray-500 text-center mb-2">ID: {eleccion.electionId}</p>
                   <div className="text-center mb-4">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                      eleccion.estado === 'activo' 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${eleccion.estado === 'activo'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}>
+                      }`}>
                       {eleccion.estado.toUpperCase()}
                     </span>
                   </div>
-                  
+
                   {resultado && (
                     <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
                       <p className="text-green-700 font-semibold mb-2">Elección finalizada</p>
@@ -314,8 +337,8 @@ export default function AdminEleccion() {
                         <ul className="mt-1 space-y-1">
                           {resultado.resultado.ganadores.map((g) => (
                             <li key={g.codigoEstudiantil} className="flex justify-between">
-                              <span>ID: {g.codigoEstudiantil}</span>
-                              <span className="font-medium">{g.votos} votos</span>
+                              <span>Candidato: {g.nombreCompleto}</span>
+                              <span className="font-medium">votos: {g.votos} </span>
                             </li>
                           ))}
                         </ul>
@@ -325,7 +348,7 @@ export default function AdminEleccion() {
                       </div>
                     </div>
                   )}
-                  
+
                   <button
                     onClick={() => abrirModalCandidatos(eleccion)}
                     className="w-full mb-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
@@ -334,31 +357,42 @@ export default function AdminEleccion() {
                   </button>
 
                   <div className="flex gap-2 mb-3">
-                    <button 
-                      onClick={() => editarEleccion(eleccion)} 
+                    <button
+                      onClick={() => editarEleccion(eleccion)}
                       className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center font-medium"
                     >
                       <Edit size={16} className="mr-1" /> Editar
                     </button>
-                    <button 
-                      onClick={() => eliminarEleccion(eleccion._id)} 
+                    <button
+                      onClick={() => eliminarEleccion(eleccion._id)}
                       className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center font-medium"
                     >
                       <Trash2 size={16} className="mr-1" /> Eliminar
                     </button>
                   </div>
-                  
+
                   <button
                     onClick={() => finalizarEleccion(eleccion._id)}
                     disabled={eleccion.estado === 'finalizado'}
-                    className={`w-full py-2 rounded-lg font-semibold transition-colors ${
-                      eleccion.estado === 'finalizado'
+                    className={`w-full py-2 rounded-lg  font-semibold transition-colors  mb-2 ${eleccion.estado === 'finalizado'
                         ? 'bg-gray-400 text-white cursor-not-allowed'
                         : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                    }`}
+                      }`}
                   >
                     {eleccion.estado === 'finalizado' ? 'Elección Finalizada' : 'Finalizar Elección'}
                   </button>
+
+                  <button
+                    onClick={() => resultadosEleccion(eleccion._id)}
+                    disabled={eleccion.estado === 'activo'}
+                    className={`w-full py-2 rounded-lg font-semibold transition-colors ${eleccion.estado === 'activo'
+                        ? 'bg-blue-400 text-white cursor-not-allowed'
+                        : 'bg-blue-400 hover:bg-blue-500 text-black'
+                      }`}
+                  >
+                    Ver resultados
+                  </button>
+
                 </div>
               );
             })}
@@ -381,7 +415,7 @@ export default function AdminEleccion() {
             {candidatosModal.length > 0 ? (
               <div className="space-y-3">
                 {candidatosModal.map((c) => (
-                  <div key={c.codigoEstudiantil} className="p-4 border rounded-lg shadow-sm bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div key={c._id} className="p-4 border rounded-lg shadow-sm bg-gray-50 hover:bg-gray-100 transition-colors">
                     <p className="font-semibold text-gray-800">{c.nombre} {c.apellido}</p>
                     <p className="text-sm text-gray-600">Código: {c.codigoEstudiantil}</p>
                   </div>
