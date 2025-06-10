@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // el API Gateway
+  baseURL: 'https://api-gateway-14jr.onrender.com', // el API Gateway
 });
 
 export default api;
