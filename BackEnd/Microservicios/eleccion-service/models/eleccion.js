@@ -2,13 +2,17 @@ const mongoose = require('mongoose');
 
 const eleccionSchema = new mongoose.Schema({
   electionId: String,
-  candidateId: String,
-  token: String,
+  candidatos: [String],  // <-- Solo IDs de los candidatos
+  nombre: String,
+  descripcion: String,
   timestamp: { type: Date, default: Date.now },
-  status: String
-}, { collection: "Eleccion" }); // Forzamos el nombre de la colección
+  estado: {
+    type: String,
+    enum: ['activo', 'finalizado'],
+    default: 'activo'
+  }
+}, { collection: "Eleccion" });
 
-const Eleccion = mongoose.model("Eleccion", eleccionSchema); // El primer parámetro no afecta la colección en la BD
+const Eleccion = mongoose.model("Eleccion", eleccionSchema);
 
 module.exports = Eleccion;
-
