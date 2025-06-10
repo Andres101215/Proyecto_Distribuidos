@@ -4,7 +4,7 @@ const ELECCION_SERVICE_URL = process.env.ELECCION_SERVICE_URL;
 const CANDIDATO_SERVICE_URL = process.env.CANDIDATO_SERVICE_URL;
 
 const contarVotos = async (eleccionId) => {
-  const { data: votos } = await axios.get(`${VOTO_SERVICE_URL}?eleccionId=${eleccionId}`);
+  const { data: votos } = await axios.get(`${VOTO_SERVICE_URL}?electionId=${eleccionId}`);
   const conteo = {};
 
   votos.forEach(voto => {
@@ -18,7 +18,7 @@ const contarVotos = async (eleccionId) => {
 const finalizarEleccion = async (eleccionId) => {
   try {
     const { data } = await axios.put(`${ELECCION_SERVICE_URL}/${eleccionId}`, {
-      status: 'finalizado'
+      estado: 'finalizado'
     });
 
     return {

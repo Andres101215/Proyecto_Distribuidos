@@ -119,7 +119,7 @@ export default function Eleccion() {
                     deshabilitado ? 'bg-gray-500 cursor-not-allowed' : 'bg-black'
                   }`}
                 >
-                  {eleccion.titulo}
+                  {eleccion.nombre}
                   {yaVoto ? ' (Ya votaste)' : esFinalizada ? ' (Finalizada)' : ''}
                 </button>
               );

@@ -8,7 +8,7 @@ export default function VotacionRepresentante() {
   const [seleccionado, setSeleccionado] = useState(null);
   const [userData, setUserData] = useState(null);
   const [candidatos, setCandidatos] = useState([]);
-  const [titulo, setTitulo] = useState(''); 
+  const [titulo, setTitulo] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -16,9 +16,9 @@ export default function VotacionRepresentante() {
   const id = queryParams.get('id');
 
   useEffect(() => {
-     const storedUser = localStorage.getItem('usuario');
-      const parsedUser = JSON.parse(storedUser);
-        setUserData(parsedUser);
+    const storedUser = localStorage.getItem('usuario');
+    const parsedUser = JSON.parse(storedUser);
+    setUserData(parsedUser);
 
     const fetchDatos = async () => {
       try {
@@ -76,7 +76,7 @@ export default function VotacionRepresentante() {
       const res = await axios.post('http://localhost:5000/api/votos/votos', voto);
 
       setSeleccionado(candidato); // Actualizar interfaz con el nombre del candidato votado
-      console.log(candidato)
+      //  console.log(candidato)
 
       navigate(-1);
       alert("El voto se registro correctamente por: " + candidato.nombre + " " + candidato.apellido)
@@ -136,7 +136,13 @@ export default function VotacionRepresentante() {
       )}
 
       {/* Main content */}
-      <div className="flex-1 bg-white p-10 relative">
+      <div className="flex-1 bg-white p-10 relative"
+        style={{
+          backgroundImage: 'url("/fondo.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}>
         <h1 className="text-3xl font-bold text-center mb-10">
           {seleccionado ? `Has votado por: ${seleccionado.nombre}` : titulo || 'Votación'}
         </h1>
@@ -156,24 +162,19 @@ export default function VotacionRepresentante() {
                   <div key={index} className="flex w-1/2 items-start space-x-4">
                     {/* Imagen + botón */}
                     <div className="flex flex-col items-center space-y-2">
-                      <img
-                        //src={candidato.foto}
-                        alt={candidato.nombre}
-                        className="w-40 h-40 object-cover rounded"
-                      />
+                      {/* Info */}
+                      <div className="bg-black text-yellow-400 p-4 w-60 h-[184px] text-sm leading-snug flex flex-col justify-center">
+                        <p><strong>Nombre:</strong> {candidato.nombre}</p>
+                        <p><strong>Apellido:</strong> {candidato.apellido}</p>
+                        <p><strong>Codigo:</strong> {candidato.codigoEstudiantil}</p>
+                        <p><strong>Propuestas:</strong> {candidato.propuestas}</p>
+                      </div>
                       <button
                         onClick={() => registrarVoto(candidato)}
                         className="bg-yellow-300 text-black font-bold px-4 py-2 border border-black hover:bg-yellow-400 w-40"
                       >
                         Votar
                       </button>
-                    </div>
-                    {/* Info */}
-                    <div className="bg-black text-yellow-400 p-4 w-60 h-[184px] text-sm leading-snug flex flex-col justify-center">
-                      <p><strong>Nombre:</strong> {candidato.nombre}</p>
-                      <p><strong>Apellido:</strong> {candidato.apellido}</p>
-                      <p><strong>Codigo:</strong> {candidato.codigoEstudiantil}</p>
-                      <p><strong>Propuestas:</strong> {candidato.propuestas}</p>
                     </div>
                   </div>
                 ))}

@@ -35,4 +35,19 @@ router.post('/', async (req, res) => {
   }
 });
 
+// endpoint GET /votos?eleccionId=e1
+router.get('/votos', async (req, res) => {
+  const {electionId } = req.query;
+  if (!electionId) {
+    return res.status(400).json({ message: 'eleccionId es requerido' });
+  }
+
+  try {
+    const votos = await Voto.find({electionId});
+    res.json(votos);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al consultar votos' });
+  }
+});
+
 module.exports = router;
