@@ -17,4 +17,4 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`CandidateService ejecutándose en http://0.0.0.0:${PORT}`);
-});s
+});
